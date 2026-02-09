@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Replay Streaming JKT48</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: 'Arial', sans-serif; background:#1a1a1a; color:#fff; margin:0; }
+    header { padding:16px; display:flex; align-items:center; gap:12px; background:#d32f2f; }
+    .logo { width:50px; height:50px; border-radius:50%; border:2px solid #fff; }
+    h2 { color:#fff; }
+    .container { padding:20px; }
+    .hidden { display:none; }
+    input, button { padding:10px; margin:6px 0; border:none; border-radius:4px; }
+    input { width:100%; max-width:300px; }
+    button { cursor:pointer; background:#ff4081; color:#fff; font-weight:bold; transition: 0.2s; }
+    button:hover { background:#f50057; }
+    .admin { color:#ffeb3b; }
+    ul { list-style:none; padding:0; }
+    li { margin:10px 0; }
+    iframe { transition: all 0.3s ease; max-width:100%; border:3px solid #d32f2f; border-radius:8px; }
+    #member h3, #admin h3 { color:#ffeb3b; }
+    body::before {
+      content: '';
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: url('jkt48-bg.jpg') no-repeat center center / cover;
+      opacity: 0.1;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <img class="logo" src="logo.png" alt="Logo" id="logo" />
+  <h2>Replay Streaming JKT48</h2>
+</header>
+
+<div class="container hidden" id="admin-login">
+  <input id="admin-pass" type="password" placeholder="ord admpasswin" />
+  <button onclick="loginAdmin()">Masuk Admin</button>
+</div>
+
+<div class="container" id="member">
+  <h3>Area Member</h3>
+  <ul id="video-list"></ul>
+  <iframe id="video-frame" width="100%" height="400" src="" allowfullscreen></iframe>
+  <button onclick="toggleFullScreen()">Perbesar / Landscape</button>
+</div>
+
+<div class="container hidden admin" id="admin">
+  <h3>Panel Admin</h3>
+  <input id="new-title" type="text" placeholder="Judul Video" />
+  <input id="new-video" type="text" placeholder="YouTube Video ID" />
+  <button onclick="addVideo()">Tambah Video</button>
+</div>
+
+<script>
+  const adminPassword = 'admin123';
+  const videos = [];
+
+  function loginAdmin() {
+    const p = document.getElementById('admin-pass').value;
+    if (p !== adminPassword) return alert('Password salah');
+    document.getElementById('admin-login').classList.add('hidden');
+    document.getElementById('admin').classList.remove('hidden');
+  }
+
+  function addVideo() {
+    const title = document.getElementById('new-title').value.trim();
+    const id = document.getElementById('new-video').value.trim();
+    if (!title || !id) return alert('Judul dan ID video harus diisi');
+    videos.push({ title, id });
+    renderVideos();
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-video').value = '';
+  }
+
+  function renderVideos() {
+    const list = document.getElementById('video-list');
+    list.innerHTML = '';
+    videos.forEach((v, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<button onclick=\"playVideo(${index})\">${v.title}</button>`;
+      list.appendChild(li);
+    });
+  }
+
+  function playVideo(index) {
+    const frame = document.getElementById('video-frame');
+    frame.src = `https://www.youtube-nocookie.com/embed/${videos[index].id}?rel=0`;
+  }
+
+  function toggleFullScreen() {
+    const frame = document.getElementById('video-frame');
+    if (!document.fullscreenElement) {
+      frame.requestFullscreen().catch(err => alert(`Gagal masuk fullscreen: ${err.message}`));
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  renderVideos();
+
+  let tapCount = 0;
+  const logo = document.getElementById('logo');
+  logo.addEventListener('click', () => {
+    tapCount++;
+    setTimeout(() => tapCount = 0, 1000);
+    if (tapCount === 5) {
+      document.getElementById('admin-login').classList.toggle('hidden');
+      tapCount = 0;
+    }
+  });
+</script>
+</body>
+</html>
